@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Vite
+*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Misc
+.cache/
+.temp/
+
+HIERARCHICAL_TASK_ANALYSIS.md
+HTA_CHART.md
+ATTRIBUTIONS.md
+default_shadcn_theme.css
+guidelines/
+.neon
+pnpm-workspace.yaml
