@@ -127,3 +127,29 @@ export const setupDB = () =>
   fetch(`${BASE}/setup`, {
     method: "POST",
   }).catch(() => null);
+
+// ─── News ─────────────────────────────────────────────────────────────────────
+
+export interface ApiNewsArticle {
+  title: string;
+  pubDate: string;
+  link: string;
+  guid: string;
+  author: string;
+  thumbnail: string;
+  description: string;
+  content: string;
+  enclosure: any;
+  categories: string[];
+}
+
+export const newsApi = {
+  fetchLatest: async (): Promise<ApiNewsArticle[]> => {
+    // We use rss2json to bypass CORS issues with Google News RSS
+    const rssUrl = encodeURIComponent("https://news.google.com/rss/search?q=real+estate+India");
+    const res = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}`);
+    if (!res.ok) throw new Error("Failed to fetch news");
+    const data = await res.json();
+    return data.items || [];
+  }
+};
