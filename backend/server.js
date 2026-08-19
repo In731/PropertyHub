@@ -6,7 +6,7 @@ const { pool, initTables } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const PREFIX = "/make-server-1d78ad60";
+const PREFIX = "";
 const JWT_SECRET = process.env.JWT_SECRET || "ph_jwt_secret_k7x9m2p4_2024";
 
 app.use(cors({
@@ -59,6 +59,11 @@ const requireAuth = async (req, res, next) => {
     return res.status(401).json({ error: "Invalid token" });
   }
 };
+
+// Root Check
+app.get(`${PREFIX}/`, (req, res) => {
+  res.send("PropertyHub API is running smoothly!");
+});
 
 // Health Check
 app.get(`${PREFIX}/health`, (req, res) => {

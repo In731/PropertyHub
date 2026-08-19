@@ -1,4 +1,4 @@
-const BASE = (import.meta as any).env?.VITE_API_URL || `http://localhost:5000/make-server-1d78ad60`;
+const BASE = (import.meta as any).env?.VITE_API_URL || `http://localhost:5000`;
 
 const TOKEN_KEY = "ph_auth_token";
 
