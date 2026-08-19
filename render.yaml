@@ -17,8 +17,9 @@ services:
         sync: false
 
   # 2. Frontend React Service
-  - type: static
+  - type: web
     name: propertyhub-frontend
+    env: static
     rootDir: .
     buildCommand: npm install && npm run build
     staticPublishPath: ./dist
