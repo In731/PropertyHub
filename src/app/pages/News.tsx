@@ -1,4 +1,4 @@
-import { Newspaper, Calendar, Clock, TrendingUp, ExternalLink, Loader2 } from 'lucide-react';
+import { Newspaper, Calendar, TrendingUp, ExternalLink, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { newsApi, ApiNewsArticle } from '../lib/api';
 
