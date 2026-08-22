@@ -44,3 +44,13 @@ default_shadcn_theme.css
 guidelines/
 .neon
 pnpm-workspace.yaml
+DB.png
+API.png
+Architecture.md
+Architecture_white.png
+API_white.png
+api-end-point.md
+entity-diagram.md
+structure.md
+Architecture.png
+Security_problem_solve.md

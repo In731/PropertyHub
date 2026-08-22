@@ -10,7 +10,7 @@ const PREFIX = "";
 const JWT_SECRET = process.env.JWT_SECRET || "ph_jwt_secret_k7x9m2p4_2024";
 
 app.use(cors({
-  origin: "*",
+  origin: "https://propertyhub-frontend-0yhu.onrender.com",
   allowedHeaders: ["Content-Type", "Authorization", "apikey"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
 }));
