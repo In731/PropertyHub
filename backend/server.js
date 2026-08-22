@@ -7,7 +7,14 @@ const { pool, initTables } = require('./db');
 const app = express();
 const PORT = process.env.PORT || 5000;
 const PREFIX = "";
-const JWT_SECRET = process.env.JWT_SECRET || "ph_jwt_secret_k7x9m2p4_2024";
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  console.error("FATAL ERROR: JWT_SECRET environment variable is missing.");
+  process.exit(1); // Crash the server so it doesn't run insecurely
+}
+
 
 app.use(cors({
   origin: "https://propertyhub-frontend-0yhu.onrender.com",
