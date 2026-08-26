@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const fileToDelete = path.join(__dirname, '../src/app/data/properties.ts');
+const fileToDelete = path.join(__dirname, '../../src/app/data/properties.ts');
 
 if (fs.existsSync(fileToDelete)) {
   try {
