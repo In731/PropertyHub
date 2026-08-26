@@ -60,68 +60,68 @@ export function PropertyCard({ property }: PropertyCardProps) {
 
   return (
     <Link to={`/property/${property.id}`} className="group">
-      <div className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-shadow duration-300">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl border border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 transition-all duration-300">
         {/* Image */}
         <div className="relative h-56 overflow-hidden">
           <img 
             src={property.image} 
-            alt={property.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            alt={property.title} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
           <div className="absolute top-3 right-3 flex gap-2">
             <button 
-              className={`p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition ${
-                favorite ? 'bg-red-50' : ''
+              className={`p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white dark:hover:bg-gray-800 transition ${
+                favorite ? 'text-red-600' : 'text-gray-600 dark:text-gray-300'
               }`}
               onClick={handleFavoriteClick}
             >
               <Heart 
-                className={`w-5 h-5 ${favorite ? 'text-red-600 fill-red-600' : 'text-gray-600'}`}
+                className={`w-4 h-4 ${favorite ? 'text-red-600 fill-red-600' : ''}`}
               />
             </button>
             <button 
-              className="p-2 bg-white rounded-full shadow-md hover:bg-gray-50 transition"
+              className="p-2.5 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-md hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition"
               onClick={handleShareClick}
             >
-              <Share2 className="w-5 h-5 text-gray-600" />
+              <Share2 className="w-4 h-4" />
             </button>
           </div>
-          <div className="absolute top-3 left-3 px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
+          <div className="absolute top-3 left-3 px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full shadow-sm">
             {property.status === 'for-sale' ? 'For Sale' : 'For Rent'}
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-5">
           <div className="mb-2">
-            <h3 className="text-lg font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
               {property.title}
             </h3>
-            <p className="text-sm text-gray-600">{property.location}, {property.city}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">{property.location}, {property.city}</p>
           </div>
 
-          <div className="text-2xl font-bold text-blue-600 mb-3">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 my-3">
             {formatPrice(property.price, property.status)}
           </div>
 
           {/* RERA Number for apartments, villas, and commercial */}
           {property.reraNumber && (property.type === 'apartment' || property.type === 'villa' || property.type === 'commercial') && (
-            <div className="text-xs text-gray-500 mb-3">
+            <div className="text-xs text-gray-500 dark:text-gray-500 mb-3 font-mono">
               RERA: {property.reraNumber}
             </div>
           )}
 
-          <div className="flex items-center gap-4 text-gray-600 text-sm">
-            <div className="flex items-center gap-1">
-              <Bed className="w-4 h-4" />
+          <div className="flex items-center gap-4 text-gray-600 dark:text-gray-400 text-sm pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div className="flex items-center gap-1.5">
+              <Bed className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               <span>{property.bedrooms} Beds</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Bath className="w-4 h-4" />
+            <div className="flex items-center gap-1.5">
+              <Bath className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               <span>{property.bathrooms} Baths</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Maximize className="w-4 h-4" />
+            <div className="flex items-center gap-1.5">
+              <Maximize className="w-4 h-4 text-gray-400 dark:text-gray-500" />
               <span>{property.area} sqft</span>
             </div>
           </div>

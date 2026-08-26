@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from 'next-themes';
 import { authApi } from '../lib/api';
-import { User, Lock, Mail, ArrowLeft, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Lock, Mail, ArrowLeft, Save, Eye, EyeOff, Palette, Sun, Moon, Laptop, Check } from 'lucide-react';
 import { PasswordStrengthIndicator } from '../components/PasswordStrengthIndicator';
 
 export function Profile() {
   const navigate = useNavigate();
   const { user, isAuthenticated, updateUser } = useAuth();
-  const [activeTab, setActiveTab] = useState<'profile' | 'password'>('profile');
+  const { theme, setTheme } = useTheme();
+  const [activeTab, setActiveTab] = useState<'profile' | 'password' | 'appearance'>('profile');
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -58,14 +60,11 @@ export function Profile() {
     }
 
     try {
-      const { user: updated, token } = await authApi.updateProfile(name, email);
-      if (updateUser) updateUser(updated);
-      const { tokenStore } = await import('../lib/api');
-      tokenStore.set(token);
+      const response = await authApi.updateProfile(name, email);
+      updateUser(response.user);
       setProfileMessage('Profile updated successfully!');
-      setTimeout(() => setProfileMessage(''), 3000);
-    } catch (e: any) {
-      setProfileError(e?.message ?? 'Update failed');
+    } catch (err: any) {
+      setProfileError(err.message || 'Failed to update profile');
     }
   };
 
@@ -76,13 +75,9 @@ export function Profile() {
 
     if (!currentPassword) { setPasswordError('Current password is required'); return; }
     if (!newPassword) { setPasswordError('New password is required'); return; }
-    if (!validatePassword(newPassword)) {
-      setPasswordError('Password does not meet the strength requirements');
-      return;
-    }
     if (newPassword !== confirmPassword) { setPasswordError('New passwords do not match'); return; }
-    if (currentPassword === newPassword) {
-      setPasswordError('New password must be different from current password');
+    if (!validatePassword(newPassword)) {
+      setPasswordError('Password must meet all security requirements');
       return;
     }
 
@@ -92,19 +87,18 @@ export function Profile() {
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
-      setTimeout(() => setPasswordMessage(''), 3000);
-    } catch (e: any) {
-      setPasswordError(e?.message ?? 'Password update failed');
+    } catch (err: any) {
+      setPasswordError(err.message || 'Failed to update password');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 py-8 transition-colors">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition mb-6"
+          className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition mb-6"
         >
           <ArrowLeft className="w-5 h-5" />
           Back
@@ -112,20 +106,20 @@ export function Profile() {
 
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Account Settings</h1>
-          <p className="text-gray-600 mt-2">Manage your profile and account preferences</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Account Settings</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">Manage your profile, security, and appearance preferences</p>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-          <div className="border-b border-gray-200">
+        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 overflow-hidden transition-colors">
+          <div className="border-b border-gray-200 dark:border-gray-800">
             <div className="flex">
               <button
                 onClick={() => setActiveTab('profile')}
                 className={`flex-1 px-6 py-4 text-sm font-medium transition ${
                   activeTab === 'profile'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-950/30'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                 }`}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -137,13 +131,26 @@ export function Profile() {
                 onClick={() => setActiveTab('password')}
                 className={`flex-1 px-6 py-4 text-sm font-medium transition ${
                   activeTab === 'password'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-950/30'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                 }`}
               >
                 <div className="flex items-center justify-center gap-2">
                   <Lock className="w-5 h-5" />
                   Change Password
+                </div>
+              </button>
+              <button
+                onClick={() => setActiveTab('appearance')}
+                className={`flex-1 px-6 py-4 text-sm font-medium transition ${
+                  activeTab === 'appearance'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50/50 dark:bg-blue-950/30'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                }`}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Palette className="w-5 h-5" />
+                  Appearance
                 </div>
               </button>
             </div>
@@ -303,6 +310,86 @@ export function Profile() {
                   Update Password
                 </button>
               </form>
+            )}
+
+            {/* Appearance Tab */}
+            {activeTab === 'appearance' && (
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">Theme Preferences</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                    Choose how PropertyHub looks to you. Select a light, dark, or system-matching theme.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    {/* Light Theme Card */}
+                    <button
+                      type="button"
+                      onClick={() => setTheme('light')}
+                      className={`relative flex flex-col items-center p-5 rounded-xl border-2 transition text-left ${
+                        theme === 'light'
+                          ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm'
+                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-800/40'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mb-3 text-amber-600">
+                        <Sun className="w-6 h-6" />
+                      </div>
+                      <span className="font-semibold text-gray-900 dark:text-white text-sm">Light Mode</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">Clean, bright interface</span>
+                      {theme === 'light' && (
+                        <div className="absolute top-3 right-3 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                          <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Dark Theme Card */}
+                    <button
+                      type="button"
+                      onClick={() => setTheme('dark')}
+                      className={`relative flex flex-col items-center p-5 rounded-xl border-2 transition text-left ${
+                        theme === 'dark'
+                          ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm'
+                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-800/40'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3 text-blue-400">
+                        <Moon className="w-6 h-6" />
+                      </div>
+                      <span className="font-semibold text-gray-900 dark:text-white text-sm">Dark Mode</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">Sleek, eye-friendly</span>
+                      {theme === 'dark' && (
+                        <div className="absolute top-3 right-3 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                          <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                    </button>
+
+                    {/* System Theme Card */}
+                    <button
+                      type="button"
+                      onClick={() => setTheme('system')}
+                      className={`relative flex flex-col items-center p-5 rounded-xl border-2 transition text-left ${
+                        theme === 'system'
+                          ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-sm'
+                          : 'border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-white dark:bg-gray-800/40'
+                      }`}
+                    >
+                      <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3 text-gray-600 dark:text-gray-300">
+                        <Laptop className="w-6 h-6" />
+                      </div>
+                      <span className="font-semibold text-gray-900 dark:text-white text-sm">System Default</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-center">Syncs with your OS</span>
+                      {theme === 'system' && (
+                        <div className="absolute top-3 right-3 w-5 h-5 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                          <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
         </div>

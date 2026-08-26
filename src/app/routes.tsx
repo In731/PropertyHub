@@ -23,7 +23,7 @@ import { ScrollToTop } from './components/ScrollToTop';
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors">
       <ScrollToTop />
       <Header />
       {children}
@@ -33,7 +33,7 @@ function Layout({ children }: { children: React.ReactNode }) {
 
 function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors">
       <ScrollToTop />
       {children}
     </div>

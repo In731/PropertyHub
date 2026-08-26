@@ -1,4 +1,5 @@
 import { RouterProvider } from 'react-router';
+import { ThemeProvider } from 'next-themes';
 import { router } from './routes';
 import { AuthProvider } from './context/AuthContext';
 import { PropertiesProvider } from './context/PropertiesContext';
@@ -8,13 +9,15 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 export default function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <FavoritesProvider>
-          <PropertiesProvider>
-            <RouterProvider router={router} />
-          </PropertiesProvider>
-        </FavoritesProvider>
-      </AuthProvider>
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <AuthProvider>
+          <FavoritesProvider>
+            <PropertiesProvider>
+              <RouterProvider router={router} />
+            </PropertiesProvider>
+          </FavoritesProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }

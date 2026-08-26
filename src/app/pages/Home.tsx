@@ -57,7 +57,7 @@ export function Home() {
       y: 0,
       opacity: 1,
       transition: {
-        type: 'spring',
+        type: 'spring' as const,
         stiffness: 100,
       },
     },
@@ -69,13 +69,13 @@ export function Home() {
       transition: {
         duration: 3,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
       },
     },
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-600 to-blue-800 text-white py-20 md:py-32 overflow-hidden">
         {/* Animated Background Elements */}
@@ -180,10 +180,10 @@ export function Home() {
       </section>
 
       {/* Categories Section */}
-      <section className="py-16 bg-white">
+      <section className="py-16 bg-white dark:bg-gray-950 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.h2
-            className="text-3xl font-bold text-center mb-12"
+            className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -199,20 +199,20 @@ export function Home() {
             viewport={{ once: true }}
           >
             <motion.div
-              className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-600 hover:shadow-lg transition cursor-pointer"
+              className="p-6 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-xl transition cursor-pointer"
               variants={itemVariants}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => navigate('/properties?propertyType=apartment')}
             >
               <motion.div variants={floatingVariants} animate="animate">
-                <Building2 className="w-12 h-12 text-blue-600 mb-4" />
+                <Building2 className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
               </motion.div>
-              <h3 className="text-xl font-semibold mb-2">Apartments</h3>
-              <p className="text-gray-600">Find modern apartments in prime locations</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Apartments</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Find modern apartments in prime locations</p>
             </motion.div>
             <motion.div
-              className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-600 hover:shadow-lg transition cursor-pointer"
+              className="p-6 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-xl transition cursor-pointer"
               variants={itemVariants}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.98 }}
@@ -229,13 +229,13 @@ export function Home() {
                   },
                 }}
               >
-                <HomeIcon className="w-12 h-12 text-blue-600 mb-4" />
+                <HomeIcon className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
               </motion.div>
-              <h3 className="text-xl font-semibold mb-2">Houses</h3>
-              <p className="text-gray-600">Spacious houses for your family</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Houses</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Spacious houses for your family</p>
             </motion.div>
             <motion.div
-              className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-600 hover:shadow-lg transition cursor-pointer"
+              className="p-6 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-xl transition cursor-pointer"
               variants={itemVariants}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.98 }}
@@ -252,13 +252,13 @@ export function Home() {
                   },
                 }}
               >
-                <Key className="w-12 h-12 text-blue-600 mb-4" />
+                <Key className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
               </motion.div>
-              <h3 className="text-xl font-semibold mb-2">Villas</h3>
-              <p className="text-gray-600">Luxury villas with premium amenities</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Villas</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Luxury villas with premium amenities</p>
             </motion.div>
             <motion.div
-              className="p-6 border-2 border-gray-200 rounded-xl hover:border-blue-600 hover:shadow-lg transition cursor-pointer"
+              className="p-6 bg-white dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-800 rounded-2xl hover:border-blue-600 dark:hover:border-blue-500 hover:shadow-xl transition cursor-pointer"
               variants={itemVariants}
               whileHover={{ scale: 1.05, y: -5 }}
               whileTap={{ scale: 0.98 }}
@@ -275,17 +275,17 @@ export function Home() {
                   },
                 }}
               >
-                <TrendingUp className="w-12 h-12 text-blue-600 mb-4" />
+                <TrendingUp className="w-12 h-12 text-blue-600 dark:text-blue-400 mb-4" />
               </motion.div>
-              <h3 className="text-xl font-semibold mb-2">Investment</h3>
-              <p className="text-gray-600">Great opportunities for investors</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Investment</h3>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Great opportunities for investors</p>
             </motion.div>
           </motion.div>
         </div>
       </section>
 
       {/* Featured Properties */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-gray-50 dark:bg-gray-950 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             className="flex justify-between items-center mb-12"
@@ -294,8 +294,8 @@ export function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h2 className="text-3xl font-bold">Featured Properties</h2>
-            <a href="/properties" className="text-blue-600 hover:text-blue-700 font-semibold">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Featured Properties</h2>
+            <a href="/properties" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 font-semibold">
               View All →
             </a>
           </motion.div>
@@ -306,12 +306,12 @@ export function Home() {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            {featuredProperties.map((property, index) => (
+            {featuredProperties.map((property) => (
               <motion.div
                 key={property.id}
                 variants={itemVariants}
                 whileHover={{ y: -8 }}
-                transition={{ type: 'spring', stiffness: 300 }}
+                transition={{ type: 'spring' as const, stiffness: 300 }}
               >
                 <PropertyCard property={property} />
               </motion.div>
