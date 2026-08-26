@@ -1,36 +1,19 @@
 import { Property } from '../types';
 import { Heart, Bed, Bath, Maximize, Share2 } from 'lucide-react';
 import { Link } from 'react-router';
-import { useState, useEffect } from 'react';
+import { useFavorites } from '../context/FavoritesContext';
 
 interface PropertyCardProps {
   property: Property;
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const favorite = isFavorite(property.id);
 
-  useEffect(() => {
-    // Check if property is in favorites
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    setIsFavorite(favorites.includes(property.id));
-  }, [property.id]);
-
-  const handleFavoriteClick = (e: React.MouseEvent) => {
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    
-    if (isFavorite) {
-      // Remove from favorites
-      const updated = favorites.filter((id: string) => id !== property.id);
-      localStorage.setItem('favorites', JSON.stringify(updated));
-      setIsFavorite(false);
-    } else {
-      // Add to favorites
-      favorites.push(property.id);
-      localStorage.setItem('favorites', JSON.stringify(favorites));
-      setIsFavorite(true);
-    }
+    await toggleFavorite(property.id);
   };
 
   const handleShareClick = async (e: React.MouseEvent) => {
@@ -88,12 +71,12 @@ export function PropertyCard({ property }: PropertyCardProps) {
           <div className="absolute top-3 right-3 flex gap-2">
             <button 
               className={`p-2 bg-white rounded-full shadow-md hover:bg-red-50 transition ${
-                isFavorite ? 'bg-red-50' : ''
+                favorite ? 'bg-red-50' : ''
               }`}
               onClick={handleFavoriteClick}
             >
               <Heart 
-                className={`w-5 h-5 ${isFavorite ? 'text-red-600 fill-red-600' : 'text-gray-600'}`}
+                className={`w-5 h-5 ${favorite ? 'text-red-600 fill-red-600' : 'text-gray-600'}`}
               />
             </button>
             <button 

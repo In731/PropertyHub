@@ -11,6 +11,7 @@ import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import { reviewsApi, propertiesApi, ApiReview, tokenStore } from '../lib/api';
+import { useFavorites } from '../context/FavoritesContext';
 
 // ─── Star Rating Component ──────────────────────────────────────────────────────
 function StarRating({
@@ -90,7 +91,8 @@ export function PropertyDetail() {
   const { properties, refresh } = useProperties();
   const { user } = useAuth();
   const property = properties.find(p => p.id === id);
-  const [isFavorite, setIsFavorite] = useState(false);
+  const { isFavorite: checkIsFavorite, toggleFavorite } = useFavorites();
+  const isFavorite = id ? checkIsFavorite(id) : false;
 
   // ─── Review State ──────────────────────────────────────────────────────────
   const [reviews, setReviews] = useState<ApiReview[]>([]);
@@ -102,14 +104,6 @@ export function PropertyDetail() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const isLoggedIn = !!tokenStore.get();
-
-  useEffect(() => {
-    if (id) {
-      // Check if property is in favorites
-      const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-      setIsFavorite(favorites.includes(id));
-    }
-  }, [id]);
 
   // Fetch reviews on mount
   useEffect(() => {
@@ -183,22 +177,9 @@ export function PropertyDetail() {
     }
   };
 
-  const handleFavoriteClick = () => {
+  const handleFavoriteClick = async () => {
     if (!id) return;
-    
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    
-    if (isFavorite) {
-      // Remove from favorites
-      const updated = favorites.filter((favId: string) => favId !== id);
-      localStorage.setItem('favorites', JSON.stringify(updated));
-      setIsFavorite(false);
-    } else {
-      // Add to favorites
-      favorites.push(id);
-      localStorage.setItem('favorites', JSON.stringify(favorites));
-      setIsFavorite(true);
-    }
+    await toggleFavorite(id);
   };
 
   const handleShareClick = async () => {

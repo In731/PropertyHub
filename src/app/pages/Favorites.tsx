@@ -1,19 +1,27 @@
 import { useNavigate } from 'react-router';
-import { useProperties } from '../context/PropertiesContext';
 import { PropertyCard } from '../components/PropertyCard';
 import { Heart, Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { favoritesApi, ApiProperty } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 
 export function Favorites() {
   const navigate = useNavigate();
-  const { properties } = useProperties();
-  const [favoriteProperties, setFavoriteProperties] = useState<any[]>([]);
+  const { user } = useAuth();
+  const [favoriteProperties, setFavoriteProperties] = useState<ApiProperty[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem('favorites') || '[]');
-    const favProps = properties.filter(prop => favorites.includes(prop.id));
-    setFavoriteProperties(favProps);
-  }, [properties]);
+    if (!user) {
+      setFavoriteProperties([]);
+      return;
+    }
+    setLoading(true);
+    favoritesApi.list()
+      .then(data => setFavoriteProperties(data))
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -30,10 +38,29 @@ export function Favorites() {
         </div>
 
         {/* Properties Grid */}
-        {favoriteProperties.length > 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="inline-block w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+            <p className="text-gray-500">Loading your favorites...</p>
+          </div>
+        ) : !user ? (
+          <div className="text-center py-16">
+            <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Log in to view favorites</h2>
+            <p className="text-gray-600 mb-6">
+              You must be logged in to view and save favorite properties.
+            </p>
+            <button
+              onClick={() => navigate('/login')}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Log In
+            </button>
+          </div>
+        ) : favoriteProperties.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {favoriteProperties.map((property) => (
-              <PropertyCard key={property.id} property={property} />
+              <PropertyCard key={property.id} property={property as any} />
             ))}
           </div>
         ) : (

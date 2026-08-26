@@ -489,6 +489,59 @@ app.delete(`${PREFIX}/properties/:id/reviews/:reviewId`, requireAuth, async (req
   }
 });
 
+// ─── Favorites ─────────────────────────────────────────────────────────────────
+
+// Get User's Favorites
+app.get(`${PREFIX}/favorites`, requireAuth, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const query = `
+      SELECT p.* 
+      FROM ph_properties p
+      INNER JOIN ph_favorites f ON p.id = f.property_id
+      WHERE f.user_id = $1
+      ORDER BY f.created_at DESC
+    `;
+    const result = await pool.query(query, [userId]);
+    res.json((result.rows ?? []).map(rowToProperty));
+  } catch (e) {
+    console.error("fetch favorites error:", e);
+    res.status(500).json({ error: "Failed to fetch favorites" });
+  }
+});
+
+// Add Favorite
+app.post(`${PREFIX}/favorites/:propertyId`, requireAuth, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const userId = req.userId;
+
+    // Check if already favorited
+    const existing = await pool.query("SELECT id FROM ph_favorites WHERE user_id = $1 AND property_id = $2", [userId, propertyId]);
+    if (existing.rows.length === 0) {
+      await pool.query("INSERT INTO ph_favorites (user_id, property_id) VALUES ($1, $2)", [userId, propertyId]);
+    }
+    res.json({ success: true });
+  } catch (e) {
+    console.error("add favorite error:", e);
+    res.status(500).json({ error: "Failed to add favorite" });
+  }
+});
+
+// Remove Favorite
+app.delete(`${PREFIX}/favorites/:propertyId`, requireAuth, async (req, res) => {
+  try {
+    const { propertyId } = req.params;
+    const userId = req.userId;
+
+    await pool.query("DELETE FROM ph_favorites WHERE user_id = $1 AND property_id = $2", [userId, propertyId]);
+    res.json({ success: true });
+  } catch (e) {
+    console.error("remove favorite error:", e);
+    res.status(500).json({ error: "Failed to remove favorite" });
+  }
+});
+
 // Start the server
 initTables().then(() => {
   app.listen(PORT, () => {

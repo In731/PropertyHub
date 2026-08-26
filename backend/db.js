@@ -50,6 +50,13 @@ const initTables = async () => {
       comment       TEXT        NOT NULL,
       created_at    TIMESTAMPTZ DEFAULT NOW()
     );
+    CREATE TABLE IF NOT EXISTS ph_favorites (
+      id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+      property_id   UUID        NOT NULL,
+      user_id       UUID        NOT NULL,
+      created_at    TIMESTAMPTZ DEFAULT NOW(),
+      UNIQUE(user_id, property_id)
+    );
   `;
   const alterTablesQuery = `
     ALTER TABLE ph_properties ADD COLUMN IF NOT EXISTS lat NUMERIC;
@@ -65,6 +72,12 @@ const initTables = async () => {
         END IF;
         IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ph_properties_user_id') THEN
             ALTER TABLE ph_properties ADD CONSTRAINT fk_ph_properties_user_id FOREIGN KEY (user_id) REFERENCES ph_users(id) ON DELETE SET NULL;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ph_favorites_property_id') THEN
+            ALTER TABLE ph_favorites ADD CONSTRAINT fk_ph_favorites_property_id FOREIGN KEY (property_id) REFERENCES ph_properties(id) ON DELETE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ph_favorites_user_id') THEN
+            ALTER TABLE ph_favorites ADD CONSTRAINT fk_ph_favorites_user_id FOREIGN KEY (user_id) REFERENCES ph_users(id) ON DELETE CASCADE;
         END IF;
     END
     $$;

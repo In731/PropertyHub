@@ -179,6 +179,20 @@ export const reviewsApi = {
 
 
 
+// ─── Favorites ────────────────────────────────────────────────────────────────
+
+export const favoritesApi = {
+  list: () => request<ApiProperty[]>("/favorites"),
+
+  add: (propertyId: string) =>
+    request<{ success: boolean }>(`/favorites/${propertyId}`, { method: "POST" }),
+
+  remove: (propertyId: string) =>
+    request<{ success: boolean }>(`/favorites/${propertyId}`, { method: "DELETE" }),
+};
+
+
+
 // ─── News ─────────────────────────────────────────────────────────────────────
 
 export interface ApiNewsArticle {
