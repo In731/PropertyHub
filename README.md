@@ -55,6 +55,14 @@ PORT=5000
 
 # Third-party integrations
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+VITE_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+VITE_CLOUDINARY_UPLOAD_PRESET=your_cloudinary_upload_preset
+
+# SMTP Settings (Resend / SendGrid / Custom SMTP)
+SMTP_HOST=smtp.resend.com
+SMTP_PORT=465
+SMTP_USER=resend
+SMTP_PASS=your_resend_api_key_here
 ```
 
 ### 3. Install Dependencies
@@ -84,8 +92,10 @@ Open your browser to `http://localhost:5173` to see the app running!
 ---
 
 ## 🔐 Core Features
-- **Interactive Map Search:** Full-screen Google Maps integration with clustered property markers.
-- **Server-Side Filtering:** Rapidly filter by city, price range, bedrooms, and property type with pagination.
-- **User Authentication:** Secure signup/login with rate-limiting and JWT sessions.
+- **Interactive Map Search:** Google Maps integration (`@react-google-maps/api`) with interactive click-to-preview cards.
+- **Server-Side Filtering:** Rapidly filter by city, price range, bedrooms, and property type with database pagination.
+- **Direct Cloudinary Uploads:** Drag-and-drop unsigned multi-image uploader directly from browser to cloud storage.
+- **Database-Backed Favorites:** Full-stack favorite system persisted to PostgreSQL with auth guards.
+- **Production Authentication & Password Reset:** Secure signup/login with rate-limiting, JWT sessions, and email-based password recovery.
 - **Listing Management:** Create, edit, and delete your own property listings.
 - **Reviews & Ratings:** Authenticated users can leave reviews and star ratings on any property.
