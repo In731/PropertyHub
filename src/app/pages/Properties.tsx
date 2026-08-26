@@ -4,72 +4,48 @@ import { PropertyCard } from '../components/PropertyCard';
 import { FilterSidebar } from '../components/FilterSidebar';
 import { SearchBar } from '../components/SearchBar';
 import { useProperties } from '../context/PropertiesContext';
-import { SearchFilters, Property } from '../types';
-import { SlidersHorizontal, Loader2 } from 'lucide-react';
+import { SearchFilters } from '../types';
+import { SlidersHorizontal, Loader2, Map as MapIcon, List } from 'lucide-react';
+import { PropertiesMap } from '../components/PropertiesMap';
 
 export function Properties() {
   const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState<SearchFilters>({});
-  const [filteredProperties, setFilteredProperties] = useState<Property[]>([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
-  const { properties, loading } = useProperties();
+  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const { properties, loading, total, page, totalPages, refresh } = useProperties();
 
   useEffect(() => {
     const status = searchParams.get('status') as 'for-sale' | 'for-rent' | undefined;
-    const location = searchParams.get('location');
     const propertyType = searchParams.get('propertyType');
 
     const initialFilters: SearchFilters = {};
     if (status) initialFilters.status = status;
-    if (location) initialFilters.location = location;
     if (propertyType) initialFilters.propertyType = propertyType;
 
     setFilters(initialFilters);
   }, [searchParams]);
 
+  // Fetch properties when filters change
   useEffect(() => {
-    let filtered = [...properties];
+    refresh(filters, 1);
+  }, [filters, refresh]);
 
-    if (filters.status) {
-      filtered = filtered.filter(p => p.status === filters.status);
+  const handlePageChange = (newPage: number) => {
+    if (newPage > 0 && newPage <= totalPages) {
+      refresh(filters, newPage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+  };
 
-    if (filters.location) {
-      filtered = filtered.filter(p => 
-        p.city.toLowerCase().includes(filters.location!.toLowerCase()) ||
-        p.location.toLowerCase().includes(filters.location!.toLowerCase())
-      );
-    }
-
-    if (filters.propertyType) {
-      filtered = filtered.filter(p => p.type === filters.propertyType);
-    }
-
-    if (filters.bedrooms) {
-      filtered = filtered.filter(p => p.bedrooms >= filters.bedrooms!);
-    }
-
-    if (filters.bathrooms) {
-      filtered = filtered.filter(p => p.bathrooms >= filters.bathrooms!);
-    }
-
-    if (filters.priceMin) {
-      filtered = filtered.filter(p => p.price >= filters.priceMin!);
-    }
-
-    if (filters.priceMax) {
-      filtered = filtered.filter(p => p.price <= filters.priceMax!);
-    }
-
-    setFilteredProperties(filtered);
-  }, [filters, properties]);
-
-  const handleSearch = (query: string, location: string) => {
+  const handleSearch = (_query: string, location: string) => {
     setFilters(prev => ({
       ...prev,
       location: location || undefined
     }));
   };
+
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -101,18 +77,38 @@ export function Properties() {
                    'All Properties'}
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  {filteredProperties.length} properties found
+                  {total} properties found
                 </p>
               </div>
 
-              {/* Mobile Filter Button */}
-              <button
-                onClick={() => setShowMobileFilters(true)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 border-2 border-gray-300 rounded-lg hover:border-blue-600 transition"
-              >
-                <SlidersHorizontal className="w-5 h-5" />
-                Filters
-              </button>
+              <div className="flex items-center gap-3">
+                {/* View Toggle */}
+                <div className="hidden lg:flex bg-white rounded-lg border border-gray-300 p-1">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition ${viewMode === 'list' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    <List className="w-4 h-4" />
+                    List
+                  </button>
+                  <button
+                    onClick={() => setViewMode('map')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition ${viewMode === 'map' ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    <MapIcon className="w-4 h-4" />
+                    Map
+                  </button>
+                </div>
+
+                {/* Mobile Filter Button */}
+                <button
+                  onClick={() => setShowMobileFilters(true)}
+                  className="lg:hidden flex items-center gap-2 px-4 py-2 border-2 border-gray-300 rounded-lg hover:border-blue-600 transition"
+                >
+                  <SlidersHorizontal className="w-5 h-5" />
+                  Filters
+                </button>
+              </div>
             </div>
 
             {/* Properties Grid */}
@@ -120,13 +116,43 @@ export function Properties() {
               <div className="flex items-center justify-center py-16">
                 <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
               </div>
-            ) : filteredProperties.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredProperties.map((property) => (
-                  <PropertyCard key={property.id} property={property} />
-                ))}
-              </div>
-            ) : (
+            ) : properties.length > 0 ? (
+              viewMode === 'map' ? (
+                <div className="h-[700px]">
+                  <PropertiesMap properties={properties} />
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {properties.map((property) => (
+                      <PropertyCard key={property.id} property={property} />
+                    ))}
+                  </div>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex justify-center items-center gap-4">
+                    <button
+                      onClick={() => handlePageChange(page - 1)}
+                      disabled={page === 1 || loading}
+                      className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-gray-700 font-medium">
+                      Page {page} of {totalPages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(page + 1)}
+                      disabled={page === totalPages || loading}
+                      className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 hover:bg-gray-50 transition"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </>
+            )
+          ) : (
               <div className="text-center py-16">
                 <p className="text-gray-600 text-lg">No properties found matching your criteria.</p>
                 <button

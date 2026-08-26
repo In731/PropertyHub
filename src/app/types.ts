@@ -17,6 +17,10 @@ export interface Property {
   parking?: number;
   furnished?: boolean;
   reraNumber?: string;
+  userId?: string;
+  userName?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface SearchFilters {

@@ -22,6 +22,8 @@ const initTables = async () => {
       price       BIGINT      NOT NULL,
       location    TEXT        NOT NULL,
       city        TEXT        NOT NULL,
+      lat         NUMERIC,
+      lng         NUMERIC,
       bedrooms    INTEGER     DEFAULT 0,
       bathrooms   INTEGER     DEFAULT 0,
       area        NUMERIC     NOT NULL,
@@ -49,9 +51,34 @@ const initTables = async () => {
       created_at    TIMESTAMPTZ DEFAULT NOW()
     );
   `;
+  const alterTablesQuery = `
+    ALTER TABLE ph_properties ADD COLUMN IF NOT EXISTS lat NUMERIC;
+    ALTER TABLE ph_properties ADD COLUMN IF NOT EXISTS lng NUMERIC;
+
+    DO $$
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ph_reviews_property_id') THEN
+            ALTER TABLE ph_reviews ADD CONSTRAINT fk_ph_reviews_property_id FOREIGN KEY (property_id) REFERENCES ph_properties(id) ON DELETE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ph_reviews_user_id') THEN
+            ALTER TABLE ph_reviews ADD CONSTRAINT fk_ph_reviews_user_id FOREIGN KEY (user_id) REFERENCES ph_users(id) ON DELETE CASCADE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_ph_properties_user_id') THEN
+            ALTER TABLE ph_properties ADD CONSTRAINT fk_ph_properties_user_id FOREIGN KEY (user_id) REFERENCES ph_users(id) ON DELETE SET NULL;
+        END IF;
+    END
+    $$;
+
+    CREATE INDEX IF NOT EXISTS idx_ph_properties_city ON ph_properties(city);
+    CREATE INDEX IF NOT EXISTS idx_ph_properties_price ON ph_properties(price);
+    CREATE INDEX IF NOT EXISTS idx_ph_properties_type ON ph_properties(type);
+    CREATE INDEX IF NOT EXISTS idx_ph_properties_status ON ph_properties(status);
+    CREATE INDEX IF NOT EXISTS idx_ph_properties_bedrooms ON ph_properties(bedrooms);
+  `;
   try {
     await pool.query(createTablesQuery);
-    console.log("Database tables verified/created successfully.");
+    await pool.query(alterTablesQuery);
+    console.log("Database tables and constraints verified/created successfully.");
     await seedProperties();
   } catch (error) {
     console.error("Database table initialization failed:", error);
@@ -488,13 +515,27 @@ const seedProperties = async () => {
       }
     ];
 
+    const cityCoords = {
+      'Mumbai': { lat: 19.0760, lng: 72.8777 },
+      'Bangalore': { lat: 12.9716, lng: 77.5946 },
+      'Pune': { lat: 18.5204, lng: 73.8567 },
+      'Delhi': { lat: 28.6139, lng: 77.2090 },
+      'Hyderabad': { lat: 17.3850, lng: 78.4867 },
+      'Gurgaon': { lat: 28.4595, lng: 77.0266 },
+    };
+
     for (const p of sampleProperties) {
+      const baseLat = cityCoords[p.city]?.lat || 20.5937;
+      const baseLng = cityCoords[p.city]?.lng || 78.9629;
+      const lat = baseLat + (Math.random() - 0.5) * 0.05;
+      const lng = baseLng + (Math.random() - 0.5) * 0.05;
+
       await pool.query(
         `INSERT INTO ph_properties (
-          title, price, location, city, bedrooms, bathrooms, area, type, status, image, images, description, amenities, year_built, parking, furnished, rera_number
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)`,
+          title, price, location, city, lat, lng, bedrooms, bathrooms, area, type, status, image, images, description, amenities, year_built, parking, furnished, rera_number
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
         [
-          p.title, p.price, p.location, p.city, p.bedrooms, p.bathrooms, p.area, p.type, p.status, p.image,
+          p.title, p.price, p.location, p.city, lat, lng, p.bedrooms, p.bathrooms, p.area, p.type, p.status, p.image,
           p.images, p.description, p.amenities, p.year_built, p.parking, p.furnished, p.rera_number
         ]
       );

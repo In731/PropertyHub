@@ -91,15 +91,58 @@ export interface ApiProperty {
   reraNumber?: string;
   userId?: string;
   userName?: string;
+  lat?: number;
+  lng?: number;
+}
+
+export interface PaginatedProperties {
+  data: ApiProperty[];
+  total: number;
+  page: number;
+  totalPages: number;
 }
 
 export const propertiesApi = {
-  list: () => request<ApiProperty[]>("/properties"),
+  list: (filters: Record<string, any> = {}) => {
+    const params = new URLSearchParams();
+    
+    const apiFilters: Record<string, any> = { ...filters };
+    if (apiFilters.propertyType) {
+      apiFilters.type = apiFilters.propertyType;
+      delete apiFilters.propertyType;
+    }
+    if (apiFilters.location) {
+      apiFilters.city = apiFilters.location;
+      delete apiFilters.location;
+    }
+
+    Object.entries(apiFilters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value));
+      }
+    });
+    const qs = params.toString();
+    const url = qs ? `/properties?${qs}` : "/properties";
+    return request<PaginatedProperties>(url);
+  },
+
+  get: (id: string) => request<ApiProperty>(`/properties/${id}`),
 
   create: (data: Omit<ApiProperty, "id" | "userId" | "userName">) =>
     request<ApiProperty>("/properties", {
       method: "POST",
       body: JSON.stringify(data),
+    }),
+
+  update: (id: string, data: Omit<ApiProperty, "id" | "userId" | "userName">) =>
+    request<ApiProperty>(`/properties/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(data),
+    }),
+
+  delete: (id: string) =>
+    request<{ success: boolean }>(`/properties/${id}`, {
+      method: "DELETE",
     }),
 };
 
@@ -120,6 +163,17 @@ export const reviewsApi = {
     request<ApiReview>(`/properties/${propertyId}/reviews`, {
       method: "POST",
       body: JSON.stringify({ rating, comment }),
+    }),
+
+  update: (propertyId: string, reviewId: string, rating: number, comment: string) =>
+    request<ApiReview>(`/properties/${propertyId}/reviews/${reviewId}`, {
+      method: "PUT",
+      body: JSON.stringify({ rating, comment }),
+    }),
+
+  delete: (propertyId: string, reviewId: string) =>
+    request<{ success: boolean }>(`/properties/${propertyId}/reviews/${reviewId}`, {
+      method: "DELETE",
     }),
 };
 

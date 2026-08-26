@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router';
 import { useProperties } from '../context/PropertiesContext';
+import { useAuth } from '../context/AuthContext';
 import {
   Bed, Bath, Maximize, Calendar, Car, Home,
   MapPin, Heart, Share2, Phone, Mail, ArrowLeft, ChevronLeft, ChevronRight,
@@ -9,7 +10,7 @@ import { useState, useEffect } from 'react';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
-import { reviewsApi, ApiReview, tokenStore } from '../lib/api';
+import { reviewsApi, propertiesApi, ApiReview, tokenStore } from '../lib/api';
 
 // ─── Star Rating Component ──────────────────────────────────────────────────────
 function StarRating({
@@ -49,7 +50,7 @@ function StarRating({
 }
 
 // ─── Review Card ─────────────────────────────────────────────────────────────────
-function ReviewCard({ review }: { review: ApiReview }) {
+function ReviewCard({ review, currentUserId, onDelete }: { review: ApiReview, currentUserId?: string, onDelete?: (id: string) => void }) {
   const dateStr = new Date(review.created_at).toLocaleDateString('en-IN', {
     year: 'numeric',
     month: 'short',
@@ -71,6 +72,12 @@ function ReviewCard({ review }: { review: ApiReview }) {
           </div>
           <StarRating rating={review.rating} size="sm" />
           <p className="mt-2 text-gray-700 text-sm leading-relaxed">{review.comment}</p>
+          
+          {currentUserId === review.user_id && (
+            <div className="mt-3 flex gap-3">
+              <button onClick={() => onDelete?.(review.id)} className="text-sm font-medium text-red-600 hover:text-red-800 transition">Delete</button>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -80,7 +87,8 @@ function ReviewCard({ review }: { review: ApiReview }) {
 export function PropertyDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { properties } = useProperties();
+  const { properties, refresh } = useProperties();
+  const { user } = useAuth();
   const property = properties.find(p => p.id === id);
   const [isFavorite, setIsFavorite] = useState(false);
 
@@ -151,6 +159,27 @@ export function PropertyDetail() {
       setSubmitError(err.message || 'Failed to submit review. Please try again.');
     } finally {
       setSubmitLoading(false);
+    }
+  };
+
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!id || !window.confirm('Delete this review?')) return;
+    try {
+      await reviewsApi.delete(id, reviewId);
+      setReviews(prev => prev.filter(r => r.id !== reviewId));
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete review');
+    }
+  };
+
+  const handleDeleteProperty = async () => {
+    if (!id || !window.confirm('Are you sure you want to delete this property listing?')) return;
+    try {
+      await propertiesApi.delete(id);
+      await refresh();
+      navigate('/properties');
+    } catch (e: any) {
+      alert(e.message || 'Failed to delete property');
     }
   };
 
@@ -339,6 +368,22 @@ export function PropertyDetail() {
                     <MapPin className="w-5 h-5" />
                     <span>{property.location}, {property.city}</span>
                   </div>
+                  {user?.id === property.userId && (
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={() => navigate(`/edit-property/${id}`)}
+                        className="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg font-medium hover:bg-blue-100 transition text-sm"
+                      >
+                        Edit Listing
+                      </button>
+                      <button
+                        onClick={handleDeleteProperty}
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="text-4xl font-bold text-blue-600">
@@ -551,7 +596,7 @@ export function PropertyDetail() {
               ) : (
                 <div className="space-y-4">
                   {reviews.map((review) => (
-                    <ReviewCard key={review.id} review={review} />
+                    <ReviewCard key={review.id} review={review} currentUserId={user?.id} onDelete={handleDeleteReview} />
                   ))}
                 </div>
               )}

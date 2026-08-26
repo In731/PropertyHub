@@ -92,6 +92,10 @@ export const router = createBrowserRouter([
     element: <Layout><AddProperty /></Layout>,
   },
   {
+    path: '/edit-property/:id',
+    element: <Layout><AddProperty /></Layout>,
+  },
+  {
     path: '/error/auth',
     element: <AuthLayout><AuthError /></AuthLayout>,
   },

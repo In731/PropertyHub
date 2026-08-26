@@ -5,7 +5,10 @@ import { Property } from "../types";
 interface PropertiesContextType {
   properties: Property[];
   loading: boolean;
-  refresh: () => Promise<void>;
+  total: number;
+  page: number;
+  totalPages: number;
+  refresh: (filters?: Record<string, any>, page?: number) => Promise<void>;
 }
 
 const PropertiesContext = createContext<PropertiesContextType | undefined>(undefined);
@@ -30,20 +33,32 @@ function apiToProperty(p: ApiProperty): Property {
     parking:     p.parking,
     furnished:   p.furnished,
     reraNumber:  p.reraNumber,
+    userId:      p.userId,
+    userName:    p.userName,
   };
 }
 
 export function PropertiesProvider({ children }: { children: ReactNode }) {
   const [userProperties, setUserProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  const fetchUserProperties = useCallback(async () => {
+  const fetchUserProperties = useCallback(async (filters: Record<string, any> = {}, targetPage: number = 1) => {
+    setLoading(true);
     try {
-      const data = await propertiesApi.list();
+      const { data, total, page, totalPages } = await propertiesApi.list({ ...filters, page: targetPage });
       setUserProperties(data.map(apiToProperty));
+      setTotal(total);
+      setPage(page);
+      setTotalPages(totalPages);
     } catch (e) {
       console.error("Failed to fetch properties:", e);
       setUserProperties([]);
+      setTotal(0);
+      setPage(1);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
@@ -56,7 +71,7 @@ export function PropertiesProvider({ children }: { children: ReactNode }) {
   const properties = userProperties;
 
   return (
-    <PropertiesContext.Provider value={{ properties, loading, refresh: fetchUserProperties }}>
+    <PropertiesContext.Provider value={{ properties, loading, total, page, totalPages, refresh: fetchUserProperties }}>
       {children}
     </PropertiesContext.Provider>
   );

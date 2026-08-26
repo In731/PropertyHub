@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { propertiesApi } from '../lib/api';
 import { Upload, MapPin, Home, DollarSign, ArrowLeft } from 'lucide-react';
 
 export function AddProperty() {
+  const { id } = useParams();
+  const isEditing = !!id;
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -26,6 +28,38 @@ export function AddProperty() {
     furnished: false,
     imageUrl: '',
   });
+
+  // Fetch existing data if editing
+  useEffect(() => {
+    if (isEditing && id) {
+      setLoading(true);
+      propertiesApi.get(id)
+        .then(prop => {
+          setFormData({
+            title: prop.title || '',
+            price: String(prop.price || ''),
+            location: prop.location || '',
+            city: prop.city || '',
+            bedrooms: String(prop.bedrooms || ''),
+            bathrooms: String(prop.bathrooms || ''),
+            area: String(prop.area || ''),
+            type: prop.type || 'apartment',
+            status: prop.status || 'for-sale',
+            description: prop.description || '',
+            amenities: prop.amenities?.join(', ') || '',
+            yearBuilt: String(prop.yearBuilt || ''),
+            parking: String(prop.parking || ''),
+            furnished: prop.furnished || false,
+            imageUrl: prop.image || '',
+          });
+        })
+        .catch(err => {
+          console.error("Failed to fetch property for editing:", err);
+          navigate('/properties');
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [id, isEditing, navigate]);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -81,7 +115,7 @@ export function AddProperty() {
 
       const imageUrl = formData.imageUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
 
-      await propertiesApi.create({
+      const payload = {
         title:       formData.title,
         price:       Number(formData.price),
         location:    formData.location,
@@ -98,11 +132,17 @@ export function AddProperty() {
         yearBuilt:   formData.yearBuilt ? Number(formData.yearBuilt) : undefined,
         parking:     formData.parking ? Number(formData.parking) : undefined,
         furnished:   formData.furnished,
-      });
+      };
+
+      if (isEditing && id) {
+        await propertiesApi.update(id, payload);
+      } else {
+        await propertiesApi.create(payload);
+      }
 
       setLoading(false);
-      alert('Property published successfully!');
-      navigate('/properties');
+      alert(`Property ${isEditing ? 'updated' : 'published'} successfully!`);
+      navigate(isEditing ? `/property/${id}` : '/properties');
     } catch (error) {
       setLoading(false);
       navigate('/error/form-submission', {
@@ -128,8 +168,8 @@ export function AddProperty() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8 pt-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Post Your Property</h1>
-          <p className="text-gray-600">Fill in the details to list your property</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{isEditing ? 'Edit Property' : 'Post Your Property'}</h1>
+          <p className="text-gray-600">{isEditing ? 'Update the details of your listing' : 'Fill in the details to list your property'}</p>
         </div>
 
         {/* Form */}
@@ -424,7 +464,7 @@ export function AddProperty() {
               disabled={loading}
               className="flex-1 px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Publishing...' : 'Publish Property'}
+              {loading ? (isEditing ? 'Updating...' : 'Publishing...') : (isEditing ? 'Save Changes' : 'Publish Property')}
             </button>
           </div>
         </form>
