@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router';
 import { useAuth } from '../context/AuthContext';
 import { propertiesApi } from '../lib/api';
 import { Upload, MapPin, Home, DollarSign, ArrowLeft } from 'lucide-react';
+import { ImageUpload } from '../components/ImageUpload';
 
 export function AddProperty() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export function AddProperty() {
     yearBuilt: '',
     parking: '',
     furnished: false,
-    imageUrl: '',
+    images: [] as string[],
   });
 
   // Fetch existing data if editing
@@ -50,7 +51,7 @@ export function AddProperty() {
             yearBuilt: String(prop.yearBuilt || ''),
             parking: String(prop.parking || ''),
             furnished: prop.furnished || false,
-            imageUrl: prop.image || '',
+            images: prop.images && prop.images.length > 0 ? prop.images : (prop.image ? [prop.image] : []),
           });
         })
         .catch(err => {
@@ -113,7 +114,8 @@ export function AddProperty() {
         return;
       }
 
-      const imageUrl = formData.imageUrl || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800';
+      const finalImages = formData.images.length > 0 ? formData.images : ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800'];
+      const primaryImage = finalImages[0];
 
       const payload = {
         title:       formData.title,
@@ -125,8 +127,8 @@ export function AddProperty() {
         area:        Number(formData.area),
         type:        formData.type,
         status:      formData.status,
-        image:       imageUrl,
-        images:      [imageUrl],
+        image:       primaryImage,
+        images:      finalImages,
         description: formData.description,
         amenities:   formData.amenities.split(',').map((a: string) => a.trim()).filter((a: string) => a),
         yearBuilt:   formData.yearBuilt ? Number(formData.yearBuilt) : undefined,
@@ -430,24 +432,13 @@ export function AddProperty() {
             <p className="text-sm text-gray-500 mt-1">Separate amenities with commas</p>
           </div>
 
-          {/* Image URL */}
+          {/* Images */}
           <div className="mb-8">
-            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-2">
-              Image URL
-            </label>
-            <div className="relative">
-              <Upload className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="url"
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/image.jpg (optional)"
-              />
-            </div>
-            <p className="text-sm text-gray-500 mt-1">Provide an image URL for your property</p>
+            <h2 className="text-xl font-semibold mb-4">Property Images</h2>
+            <ImageUpload 
+              images={formData.images}
+              onChange={(images) => setFormData(prev => ({ ...prev, images }))}
+            />
           </div>
 
           {/* Submit Button */}
