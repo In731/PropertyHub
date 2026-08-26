@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
+const { z } = require('zod');
 const { pool, initTables } = require('./db');
 
 const app = express();
@@ -77,19 +79,33 @@ app.get(`${PREFIX}/health`, (req, res) => {
   res.json({ status: "ok" });
 });
 
-// Setup DB Tables route
-app.post(`${PREFIX}/setup`, async (req, res) => {
-  await initTables();
-  res.json({ status: "done" });
+// Zod Schemas
+const signupSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(6, "Password must be at least 6 characters")
+});
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(1, "Password is required")
+});
+
+// Rate Limiter
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 15, // limit each IP to 15 requests per windowMs
+  message: { error: "Too many requests from this IP, please try again later" }
 });
 
 // Sign Up Route
-app.post(`${PREFIX}/auth/signup`, async (req, res) => {
+app.post(`${PREFIX}/auth/signup`, authLimiter, async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: "name, email and password are required" });
+    const parsed = signupSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0].message });
     }
+    const { name, email, password } = parsed.data;
 
     // Check if email exists
     const existing = await pool.query("SELECT id FROM ph_users WHERE email = $1", [email]);
@@ -118,12 +134,13 @@ app.post(`${PREFIX}/auth/signup`, async (req, res) => {
 });
 
 // Login Route
-app.post(`${PREFIX}/auth/login`, async (req, res) => {
+app.post(`${PREFIX}/auth/login`, authLimiter, async (req, res) => {
   try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ error: "email and password required" });
+    const parsed = loginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.issues[0].message });
     }
+    const { email, password } = parsed.data;
 
     const result = await pool.query(
       "SELECT id, name, email, password_hash FROM ph_users WHERE email = $1",
@@ -307,6 +324,11 @@ app.post(`${PREFIX}/properties/:id/reviews`, requireAuth, async (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+initTables().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}).catch(err => {
+  console.error("Failed to initialize database:", err);
+  process.exit(1);
 });

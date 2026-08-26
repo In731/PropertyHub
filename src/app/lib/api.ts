@@ -123,10 +123,7 @@ export const reviewsApi = {
     }),
 };
 
-export const setupDB = () =>
-  fetch(`${BASE}/setup`, {
-    method: "POST",
-  }).catch(() => null);
+
 
 // ─── News ─────────────────────────────────────────────────────────────────────
 

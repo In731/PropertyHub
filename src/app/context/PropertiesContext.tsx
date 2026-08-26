@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
-import { propertiesApi, ApiProperty, setupDB } from "../lib/api";
+import { propertiesApi, ApiProperty } from "../lib/api";
 import { Property } from "../types";
 
 interface PropertiesContextType {
@@ -50,7 +50,6 @@ export function PropertiesProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setupDB();
     fetchUserProperties();
   }, [fetchUserProperties]);
 
