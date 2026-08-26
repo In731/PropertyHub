@@ -4,6 +4,8 @@ import { Properties } from './pages/Properties';
 import { PropertyDetail } from './pages/PropertyDetail';
 import { Login } from './pages/Login';
 import { Signup } from './pages/Signup';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { AddProperty } from './pages/AddProperty';
 import { Favorites } from './pages/Favorites';
 import { EMICalculator } from './pages/EMICalculator';
@@ -86,6 +88,14 @@ export const router = createBrowserRouter([
   {
     path: '/signup',
     element: <AuthLayout><Signup /></AuthLayout>,
+  },
+  {
+    path: '/forgot-password',
+    element: <AuthLayout><ForgotPassword /></AuthLayout>,
+  },
+  {
+    path: '/reset-password',
+    element: <AuthLayout><ResetPassword /></AuthLayout>,
   },
   {
     path: '/add-property',

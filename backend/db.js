@@ -14,6 +14,8 @@ const initTables = async () => {
       name          TEXT        NOT NULL,
       email         TEXT        UNIQUE NOT NULL,
       password_hash TEXT        NOT NULL,
+      reset_token   TEXT,
+      reset_token_expiry TIMESTAMPTZ,
       created_at    TIMESTAMPTZ DEFAULT NOW()
     );
     CREATE TABLE IF NOT EXISTS ph_properties (
@@ -61,6 +63,8 @@ const initTables = async () => {
   const alterTablesQuery = `
     ALTER TABLE ph_properties ADD COLUMN IF NOT EXISTS lat NUMERIC;
     ALTER TABLE ph_properties ADD COLUMN IF NOT EXISTS lng NUMERIC;
+    ALTER TABLE ph_users ADD COLUMN IF NOT EXISTS reset_token TEXT;
+    ALTER TABLE ph_users ADD COLUMN IF NOT EXISTS reset_token_expiry TIMESTAMPTZ;
 
     DO $$
     BEGIN

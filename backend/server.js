@@ -4,6 +4,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const rateLimit = require('express-rate-limit');
 const { z } = require('zod');
+const nodemailer = require('nodemailer');
+const crypto = require('crypto');
 const { pool, initTables } = require('./db');
 
 const app = express();
@@ -226,6 +228,109 @@ app.put(`${PREFIX}/auth/password`, requireAuth, async (req, res) => {
   } catch (e) {
     console.error("password update error:", e);
     res.status(500).json({ error: "Password update failed" });
+  }
+});
+
+// Configure Nodemailer
+const getTransporter = async () => {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT || 587,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  } else {
+    // Fallback to Ethereal for local testing if SMTP not provided
+    const testAccount = await nodemailer.createTestAccount();
+    return nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: {
+        user: testAccount.user,
+        pass: testAccount.pass,
+      },
+    });
+  }
+};
+
+// Forgot Password
+app.post(`${PREFIX}/auth/forgot-password`, authLimiter, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ error: "Email is required" });
+
+    const result = await pool.query("SELECT id FROM ph_users WHERE email = $1", [email]);
+    if (result.rows.length === 0) {
+      // Return success even if not found to prevent email enumeration
+      return res.json({ success: true, message: "If that email exists, a reset link has been sent." });
+    }
+
+    const userId = result.rows[0].id;
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour
+
+    await pool.query(
+      "UPDATE ph_users SET reset_token = $1, reset_token_expiry = $2 WHERE id = $3",
+      [resetToken, resetTokenExpiry, userId]
+    );
+
+    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+    const transporter = await getTransporter();
+
+    const info = await transporter.sendMail({
+      from: '"PropertyHub" <noreply@propertyhub.com>',
+      to: email,
+      subject: "Password Reset Request",
+      text: `You requested a password reset. Click this link to reset your password: ${resetLink}`,
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p><a href="${resetLink}">Reset Password</a>`
+    });
+
+    console.log("Message sent: %s", info.messageId);
+    if (info.messageId && !process.env.SMTP_HOST) {
+      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    }
+
+    res.json({ success: true, message: "If that email exists, a reset link has been sent." });
+  } catch (e) {
+    console.error("forgot password error:", e);
+    res.status(500).json({ error: "Failed to process request" });
+  }
+});
+
+// Reset Password
+app.post(`${PREFIX}/auth/reset-password`, authLimiter, async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ error: "Token and new password are required" });
+
+    const result = await pool.query(
+      "SELECT id, reset_token_expiry FROM ph_users WHERE reset_token = $1",
+      [token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "Invalid or expired token" });
+    }
+
+    const user = result.rows[0];
+    if (new Date() > new Date(user.reset_token_expiry)) {
+      return res.status(400).json({ error: "Token has expired" });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await pool.query(
+      "UPDATE ph_users SET password_hash = $1, reset_token = NULL, reset_token_expiry = NULL WHERE id = $2",
+      [newHash, user.id]
+    );
+
+    res.json({ success: true, message: "Password has been successfully reset" });
+  } catch (e) {
+    console.error("reset password error:", e);
+    res.status(500).json({ error: "Failed to reset password" });
   }
 });
 
