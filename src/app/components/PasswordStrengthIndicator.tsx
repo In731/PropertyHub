@@ -45,15 +45,15 @@ export function PasswordStrengthIndicator({ password, showRequirements = true }:
       {password.length > 0 && (
         <div className="mb-3">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-sm text-gray-600">Password strength:</span>
-            <span className={`text-sm font-semibold ${getStrengthTextColor()}`}>
+            <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Password strength:</span>
+            <span className={`text-xs font-bold ${getStrengthTextColor()}`}>
               {getStrengthLabel()}
             </span>
           </div>
-          <div className="flex gap-1 h-1.5">
-            <div className={`flex-1 rounded-full ${strength >= 1 ? getStrengthColor() : 'bg-gray-200'}`} />
-            <div className={`flex-1 rounded-full ${strength >= 2 ? getStrengthColor() : 'bg-gray-200'}`} />
-            <div className={`flex-1 rounded-full ${strength >= 3 ? getStrengthColor() : 'bg-gray-200'}`} />
+          <div className="flex gap-1.5 h-1.5">
+            <div className={`flex-1 rounded-full transition-all duration-300 ${strength >= 1 ? getStrengthColor() : 'bg-gray-200 dark:bg-gray-800'}`} />
+            <div className={`flex-1 rounded-full transition-all duration-300 ${strength >= 2 ? getStrengthColor() : 'bg-gray-200 dark:bg-gray-800'}`} />
+            <div className={`flex-1 rounded-full transition-all duration-300 ${strength >= 3 ? getStrengthColor() : 'bg-gray-200 dark:bg-gray-800'}`} />
           </div>
         </div>
       )}
@@ -61,27 +61,27 @@ export function PasswordStrengthIndicator({ password, showRequirements = true }:
       {showRequirements && (
         <div className="space-y-2">
           {password.length === 0 ? (
-            <div className="flex items-start gap-2 text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-              <AlertCircle className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2 text-xs bg-blue-50/80 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 p-3 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-blue-900">Password must contain:</p>
+                <p className="font-semibold text-blue-900 dark:text-blue-300">Password must contain:</p>
                 <ul className="mt-1 space-y-1">
                   {requirements.map((req, index) => (
-                    <li key={index} className="text-blue-800">• {req.label}</li>
+                    <li key={index} className="text-blue-800 dark:text-blue-400">• {req.label}</li>
                   ))}
                 </ul>
               </div>
             </div>
           ) : (
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               {requirements.map((req, index) => {
                 const passed = req.test(password);
                 return (
-                  <div key={index} className={`flex items-center gap-2 text-sm ${passed ? 'text-green-600' : 'text-gray-500'}`}>
+                  <div key={index} className={`flex items-center gap-1.5 text-xs font-medium ${passed ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
                     {passed ? (
-                      <Check className="w-4 h-4" />
+                      <Check className="w-3.5 h-3.5" />
                     ) : (
-                      <X className="w-4 h-4" />
+                      <X className="w-3.5 h-3.5" />
                     )}
                     <span>{req.label}</span>
                   </div>
