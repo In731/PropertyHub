@@ -1,10 +1,9 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || 'ph_default_jwt_secret_dev_key_2024';
 
-if (!JWT_SECRET) {
-  console.error("FATAL ERROR: JWT_SECRET environment variable is missing.");
-  process.exit(1);
+if (!process.env.JWT_SECRET) {
+  console.warn("⚠️ Warning: JWT_SECRET environment variable is not set. Using development secret.");
 }
 
 const requireAuth = async (req, res, next) => {

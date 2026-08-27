@@ -172,7 +172,8 @@ router.post('/forgot-password', authLimiter, async (req, res) => {
       [resetToken, resetTokenExpiry, userId]
     );
 
-    const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+    const frontendBase = process.env.FRONTEND_URL || (process.env.NODE_ENV === 'production' ? 'https://propertyhub-frontend-0yhu.onrender.com' : 'http://localhost:5173');
+    const resetLink = `${frontendBase}/reset-password?token=${resetToken}`;
     const transporter = await getTransporter();
 
     const info = await transporter.sendMail({
