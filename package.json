@@ -1,52 +1,12 @@
 {
-  "name": "@figma/my-make-file",
+  "name": "propertyhub-monorepo",
   "private": true,
-  "version": "0.0.1",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite"
-  },
-  "dependencies": {
-    "@react-google-maps/api": "^2.20.8",
-    "class-variance-authority": "0.7.1",
-    "clsx": "2.1.1",
-    "lucide-react": "^0.344.0",
-    "motion": "12.23.24",
-    "next-themes": "0.4.6",
-    "nodemailer": "^6.9.15",
-    "pg": "^8.11.3",
-    "react-router": "7.13.0",
-    "react-slick": "0.31.0",
-    "recharts": "2.15.2",
-    "slick-carousel": "^1.8.1",
-    "tailwind-merge": "3.2.0",
-    "tw-animate-css": "1.3.8"
-  },
-  "devDependencies": {
-    "@tailwindcss/vite": "4.1.12",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
-    "@types/react-slick": "^0.23.13",
-    "@vitejs/plugin-react": "4.7.0",
-    "tailwindcss": "4.1.12",
-    "vite": "6.3.5"
-  },
-  "peerDependencies": {
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
-  },
-  "peerDependenciesMeta": {
-    "react": {
-      "optional": true
-    },
-    "react-dom": {
-      "optional": true
-    }
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "6.3.5"
-    }
+    "dev:frontend": "npm run dev --prefix frontend",
+    "dev:backend": "npm start --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "install:all": "npm install --prefix frontend && npm install --prefix backend"
   }
 }
