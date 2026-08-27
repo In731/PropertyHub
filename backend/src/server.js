@@ -69,10 +69,8 @@ const startServer = () => {
   return server;
 };
 
-// Start if executed directly
-if (require.main === module) {
-  startServer();
-}
+// Start server automatically
+startServer();
 
 module.exports = {
   app,
