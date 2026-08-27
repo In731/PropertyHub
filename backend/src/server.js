@@ -43,16 +43,21 @@ app.use('/favorites', favoritesRoutes);
 app.use('/news', newsRoutes);
 
 // Server startup function
-const startServer = async () => {
-  try {
-    await initTables();
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
+const startServer = () => {
+  const server = app.listen(PORT, () => {
+    console.log(`🚀 PropertyHub API is listening on port ${PORT}`);
+  });
+
+  // Initialize database asynchronously without blocking immediate server binding
+  initTables()
+    .then(() => {
+      console.log("✅ Database initialized and verified successfully.");
+    })
+    .catch((err) => {
+      console.error("⚠️ Warning: Initial database check failed:", err.message);
     });
-  } catch (err) {
-    console.error("Failed to initialize database and start server:", err);
-    process.exit(1);
-  }
+
+  return server;
 };
 
 // Start if executed directly

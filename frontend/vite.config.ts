@@ -14,4 +14,8 @@ export default defineConfig({
     },
   },
   assetsInclude: ['**/*.svg', '**/*.csv'],
+  build: {
+    outDir: '../dist',
+    emptyOutDir: true,
+  },
 })
